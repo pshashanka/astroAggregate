@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Send, Bot, User, Loader2, Settings2 } from "lucide-react";
+import { Send, Bot, User, Loader2 } from "lucide-react";
 
 type Message = {
   role: "user" | "assistant" | "system";
