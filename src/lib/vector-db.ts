@@ -8,16 +8,25 @@ const pinecone = new Pinecone({
 
 // Get the default index
 export function getVectorIndex(indexName?: string) {
-  return pinecone.index(indexName || process.env.PINECONE_INDEX!);
+  const name = indexName || process.env.PINECONE_INDEX;
+  if (!name) {
+    throw new Error("PINECONE_INDEX environment variable is not set");
+  }
+  return pinecone.index(name);
 }
 
 // Generate embeddings using OpenAI
 export async function generateEmbedding(text: string): Promise<number[]> {
-  const response = await openai.embeddings.create({
-    model: "text-embedding-3-small",
-    input: text,
-  });
-  return response.data[0].embedding;
+  try {
+    const response = await openai.embeddings.create({
+      model: "text-embedding-3-small",
+      input: text.replace(/\n/g, " "), // Recommended for better embeddings
+    });
+    return response.data[0].embedding;
+  } catch (error) {
+    console.error("Error generating embedding:", error);
+    throw error;
+  }
 }
 
 // Upsert vectors to Pinecone

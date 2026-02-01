@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@clerk/nextjs/server";
 import { streamChatResponse, type ChatMessage, type AIProvider } from "@/lib/ai";
+import { semanticSearch } from "@/lib/vector-db";
 
 export const runtime = "nodejs";
 export const maxDuration = 60; // Streaming timeout
@@ -28,12 +29,48 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create a streaming response
+    // 1. RAG: Retrieve context from Pinecone
+    const enhancedMessages = [...messages];
+    try {
+      const lastMessage = messages[messages.length - 1];
+      if (lastMessage && lastMessage.role === "user") {
+        const searchResults = await semanticSearch(lastMessage.content, {
+          topK: 3,
+        });
+
+        const context = searchResults.matches
+          ?.map((match) => match.metadata?.text as string | undefined)
+          .filter(Boolean)
+          .join("\n---\n");
+
+        if (context) {
+          const systemMsgIdx = enhancedMessages.findIndex(m => m.role === "system");
+          const contextPrompt = `\n\nUse the following retrieved context to help answer the user's question. If the context is irrelevant, ignore it.\n\nCONTEXT:\n${context}`;
+          
+          if (systemMsgIdx !== -1) {
+            enhancedMessages[systemMsgIdx] = {
+              ...enhancedMessages[systemMsgIdx],
+              content: enhancedMessages[systemMsgIdx].content + contextPrompt
+            };
+          } else {
+            enhancedMessages.unshift({
+              role: "system",
+              content: `You are a helpful assistant.${contextPrompt}`
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("RAG retrieval error:", error);
+      // Continue without context if retrieval fails
+    }
+
+    // 2. Create a streaming response
     const encoder = new TextEncoder();
     const stream = new ReadableStream({
       async start(controller) {
         try {
-          for await (const chunk of streamChatResponse(messages, provider, { model })) {
+          for await (const chunk of streamChatResponse(enhancedMessages, provider, { model })) {
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ content: chunk })}\n\n`));
           }
           controller.enqueue(encoder.encode("data: [DONE]\n\n"));
