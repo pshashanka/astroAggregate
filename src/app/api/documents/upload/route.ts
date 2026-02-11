@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { generateEmbedding, upsertVectors } from '@/lib/vector-db';
-import { PDFParse } from 'pdf-parse';
+import pdf from 'pdf-parse-fork';
 import { v4 as uuidv4 } from 'uuid';
 
 export const maxDuration = 60; // Increase timeout for processing larger files
@@ -29,9 +29,8 @@ export async function POST(req: Request) {
 
     if (file.name.endsWith('.pdf')) {
       try {
-        const parser = new PDFParse({ data: buffer });
-        const result = await parser.getText();
-        text = result.text;
+        const data = await pdf(buffer);
+        text = data.text;
       } catch (pdfError) {
         console.error('PDF parsing error:', pdfError);
         return NextResponse.json({ error: 'Failed to parse PDF file' }, { status: 400 });
