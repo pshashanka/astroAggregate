@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
       const lastMessage = messages[messages.length - 1];
       if (lastMessage && lastMessage.role === "user") {
         const searchResults = await semanticSearch(lastMessage.content, {
-          topK: 3,
+          topK: 5,
+          filter: { userId },
         });
 
         const context = searchResults.matches
@@ -45,7 +46,11 @@ export async function POST(request: NextRequest) {
 
         if (context) {
           const systemMsgIdx = enhancedMessages.findIndex(m => m.role === "system");
-          const contextPrompt = `\n\nUse the following retrieved context to help answer the user's question. If the context is irrelevant, ignore it.\n\nCONTEXT:\n${context}`;
+          const contextPrompt = `\n\nUse the following retrieved context from the user's uploaded documents to help answer their question. 
+If the context is relevant, prioritize it. If the context does not contain the answer, rely on your general knowledge but mention that the documents don't specify.
+
+CONTEXT:
+${context}`;
           
           if (systemMsgIdx !== -1) {
             enhancedMessages[systemMsgIdx] = {

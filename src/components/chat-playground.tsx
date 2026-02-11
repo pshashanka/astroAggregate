@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { Send, Bot, User, Loader2 } from "lucide-react";
+import { Send, Bot, User, Loader2, FileText } from "lucide-react";
+import Link from "next/link";
 
 type Message = {
   role: "user" | "assistant" | "system";
@@ -110,6 +111,12 @@ export function ChatPlayground() {
           AI Chat
         </CardTitle>
         <div className="flex items-center gap-2">
+          <Link href="/documents">
+            <Button variant="ghost" size="sm" className="h-8 text-xs flex items-center gap-1">
+              <FileText className="w-3.5 h-3.5" />
+              Documents
+            </Button>
+          </Link>
           <Select value={provider} onValueChange={(v) => setProvider(v as Provider)}>
             <SelectTrigger className="w-[140px] h-8 text-xs">
               <SelectValue placeholder="Select provider" />

@@ -114,9 +114,9 @@ export default function DocumentsPage() {
               status.type === 'error' ? 'bg-red-50 text-red-700 dark:bg-red-950/30 dark:text-red-400 border border-red-200 dark:border-red-900' :
               'bg-muted text-muted-foreground'
             }`}>
-              {status.type === 'success' && <CheckCircle2 className="h-5 w-5 mt-0.5 flex-shrink-0" />}
-              {status.type === 'error' && <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />}
-              {status.type === 'uploading' && <Loader2 className="h-5 w-5 mt-0.5 animate-spin flex-shrink-0" />}
+              {status.type === 'success' && <CheckCircle2 className="h-5 w-5 mt-0.5 shrink-0" />}
+              {status.type === 'error' && <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />}
+              {status.type === 'uploading' && <Loader2 className="h-5 w-5 mt-0.5 animate-spin shrink-0" />}
               <p className="text-sm font-medium">{status.message}</p>
             </div>
           )}
